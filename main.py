@@ -74,7 +74,7 @@ class Api:
                 db.execute("select count(*) from Reports where status='d' and statusdate = '{}'".format(
                     str(cur.year) + "/" + cur.strftime("%m") + "/" + j))
                 ydeaths.append(list(db.fetchone())[0])
-                xaxis.append(i)
+                xaxis.append(str(i)+" "+calendar.month_abbr[cur.month])
 
             data = {
                 'type': 'dashboard', 'cur': 'connect', 'xaxis': xaxis, 'ycases': ycases, 'yrecovered': yrecovered,
@@ -157,6 +157,8 @@ class Api:
                 if rec[4]:
                     vaccinated = 'Yes'
 
+                elif rec[4] is None:
+                    vaccinated="N/A"
                 else:
                     vaccinated = 'No'
 
@@ -167,8 +169,14 @@ class Api:
                   <div class="col col-4" data-label="Status">{}</div>
                   <div class="col col-5" data-label="Vaccinated">{}</div>
                 </li>'''.format(rec[0], colortype, rec[0], rec[1], rec[2], status, vaccinated)
-            data = {
+            if html!='':
+                data = {
                 'html': html, 'type': 'reports', 'cur': None}
+            else:
+                
+                data = {
+                'html': "<h6 style='display:block;width:500px;position:absolute;left:50%;right:50%;color:rgba(0,0,0,0.5);'>No Reports Found!</h6>", 'type': 'reports', 'cur': None}
+            
             return data
 
         except Exception as e:
@@ -310,7 +318,10 @@ class Api:
             #vaccination details
             reports_vaccinated="No"
             if reports_data[5]:
-              reports_vaccinated ="Yes"
+                reports_vaccinated ="Yes"
+              
+            elif reports_data[5] is  None:
+                reports_vaccinated="N/A"
 
             html_below='''<div class="reports">
     <p style="display: inline-block;padding-left: 25px;">Vaccinated: {}</p>
@@ -390,6 +401,7 @@ class Api:
           <h2>Since {} Day/s</h2>
           <img style="border-radius:15px;" width="200px" src="data:image/png;base64,{}">{}
           </div>'''.format(colortype, name, emid,user_table[2],gender, actions,status, since_pcr, qrs,html_below)
+          
             data = {
                 'html': html, 'type': 'details-content', 'cur': None}
 
@@ -402,92 +414,107 @@ class Api:
 
 #filtering
     def filters(self, emid, Name, Age, Status, Vaccinated):
-        print("filtering")
-        query = ""
-        #generating query
-        if emid is not None and (Name is not None or Age is not None or Status is not None or Vaccinated is not None):
-          #if emid is specified and there r more than 1 queries
-            query+= " R.em_id like '" + str(emid) + "%' and "
+        try:
+            print("filtering")
+            query = ""
+            #generating query
+            if emid is not None and (Name is not None or Age is not None or Status is not None or Vaccinated is not None):
+            #if emid is specified and there r more than 1 queries
+                query+= " R.em_id like '" + str(emid) + "%' and "
 
-        elif emid is not None and (Name is None or Age is None or Status is None or Vaccinated is None):
-          #if only one query
-            query+= " R.em_id like '" + str(emid) + "%'"
+            elif emid is not None and (Name is None or Age is None or Status is None or Vaccinated is None):
+            #if only one query
+                query+= " R.em_id like '" + str(emid) + "%'"
 
-        if Name is not None and (Age is not None or Status is not None or Vaccinated is not None):
-          #if emid,name and more is specified
-            query += " U.name like '" + str(Name) + "%' and "
+            if Name is not None and (Age is not None or Status is not None or Vaccinated is not None):
+            #if emid,name and more is specified
+                query += " U.name like '" + str(Name) + "%' and "
 
-        elif Name is not None and (Age is None or Status is None or Vaccinated is None):
-          #if only name and emid is specified
-            query += " U.name like '" + str(Name) + "%'"
+            elif Name is not None and (Age is None or Status is None or Vaccinated is None):
+            #if only name and emid is specified
+                query += " U.name like '" + str(Name) + "%'"
 
-        if Age is not None and (Status is not None or Vaccinated is not None):
-          #if emid,name,age and more is specified
-            query += " U.age=" + str(Age) + " and "
-
-
-        elif Age is not None and (Status is None or Vaccinated is None):
-            #if age is last filer specified
-            query += " U.age=" + str(Age)
-
-        if Status is not None and Vaccinated is not None:
-          #if status and more  is specified
-            query += " R.status='" + str(Status) + "' and "
+            if Age is not None and (Status is not None or Vaccinated is not None):
+            #if emid,name,age and more is specified
+                query += " U.age=" + str(Age) + " and "
 
 
-        elif Status is not None and Vaccinated is None:
-          #if status is the last filer specified
-            query += " R.status='" + str(Status) + "' "
+            elif Age is not None and (Status is None or Vaccinated is None):
+                #if age is last filer specified
+                query += " U.age=" + str(Age)
 
-        if Vaccinated is not None:
-          #if vaccinated is specified
-            query += " R.vaccinated=" + str(Vaccinated)
+            if Status is not None and Vaccinated is not None:
+            #if status and more  is specified
+                query += " R.status='" + str(Status) + "' and "
 
-        #check if no filter
-        if query != '':
-            db.execute(
-                "select emirates_id,name,Age,Status,Vaccinated from Users U , Reports R where  U.emirates_id = R.em_id and " + query)
 
-        else:
-            db.execute(
-                "select emirates_id,name,Age,Status,Vaccinated from Users U , Reports R where  U.emirates_id = R.em_id ")
-        #refreshing reports on filter
-        d = db.fetchall()
-        h = ''
-        for i in d:
-            s = ''
-            v = ''
-            t = ''
-            if i[3] == '-':
-                s = 'Negative'
-                t = 'negative'
-            elif i[3] == '+':
-                s = 'Positive'
-                t = 'positive'
-            elif i[3] == 'd':
-                s = 'Deceased'
-                t = 'deaths'
+            elif Status is not None and Vaccinated is None:
+            #if status is the last filer specified
+                query += " R.status='" + str(Status) + "' "
+
+            if Vaccinated is not None:
+            #if vaccinated is specified
+                query += " R.vaccinated=" + str(Vaccinated)
+
+
+            #check if no filter
+            if query != '':
+                db.execute(
+                    "select emirates_id,name,Age,Status,Vaccinated from Users U , Reports R where  U.emirates_id = R.em_id and " + query)
 
             else:
-                s = 'Out Dated'
-                t = 'null'
+                db.execute(
+                    "select emirates_id,name,Age,Status,Vaccinated from Users U , Reports R where  U.emirates_id = R.em_id ")
+            #refreshing reports on filter
+            d = db.fetchall()
+            print(d)
+            h = ''
+            for i in d:
+                s = ''
+                v = ''
+                t = ''
+                if i[3] == '-':
+                    s = 'Negative'
+                    t = 'negative'
+                elif i[3] == '+':
+                    s = 'Positive'
+                    t = 'positive'
+                elif i[3] == 'd':
+                    s = 'Deceased'
+                    t = 'deaths'
 
-            if i[4]:
-                v = 'Yes'
+                else:
+                    s = 'Out Dated'
+                    t = 'null'
 
+                if i[4]:
+                    v = 'Yes'
+                elif i[4] is None:
+                    v="N/A"
+                else:
+                    v = 'No'
+
+                h = h + '''<li id="{}" class="table-row {}" onclick="ShowDetails(this.id)">
+                <div class="col col-1" data-label="Emirates Id">{}</div>
+                <div class="col col-2" data-label="Name">{}</div>
+                <div class="col col-3" data-label="Age">{}</div>
+                <div class="col col-4" data-label="Status">{}</div>
+                <div class="col col-5" data-label="Vaccinated">{}</div>
+                </li>'''.format(i[0], t, i[0], i[1], i[2], s, v)
+            if h!='':
+                data = {
+                'html': h, 'type': 'reports', 'cur': None}
             else:
-                v = 'No'
+                
+                data = {
+                'html': "<h6 style='display:block;width:500px;position:absolute;left:50%;right:50%;color:rgba(0,0,0,0.5);'>No Reports Found!</h6>", 'type': 'reports', 'cur': None}
+            return data
 
-            h = h + '''<li id="{}" class="table-row {}" onclick="ShowDetails(this.id)">
-              <div class="col col-1" data-label="Emirates Id">{}</div>
-              <div class="col col-2" data-label="Name">{}</div>
-              <div class="col col-3" data-label="Age">{}</div>
-              <div class="col col-4" data-label="Status">{}</div>
-              <div class="col col-5" data-label="Vaccinated">{}</div>
-            </li>'''.format(i[0], t, i[0], i[1], i[2], s, v)
-        data = {
-            'html': h, 'type': 'reports', 'cur': None}
-        return data
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            print(e)
 
 #updating pcr result
     def UpdateData(self, status, date, emid):
