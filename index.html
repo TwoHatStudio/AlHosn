@@ -321,7 +321,10 @@
     border: none;
     cursor: pointer;
   }
-
+  #reports-graph{
+    width: 80%;
+    height: 80%;
+  }
   .searcher {
     box-sizing: border-box;
     background-position: 14px 12px;
@@ -1070,6 +1073,7 @@
   }
 
   const ctx = document.getElementById('reports-graph');
+  
   //Python function translator
   function Actd(data) {
   console.log(data.type)
@@ -1108,12 +1112,19 @@
           }]
 
         },
+        
         options: {
           scales: {
             y: {
               beginAtZero: true
             }
-          }
+          },
+          layout: {
+            padding: {
+              left:100,
+              right:100
+            }
+        }
         }
       });
 
