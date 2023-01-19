@@ -431,6 +431,9 @@
 
     color: #fff;
   }
+  i{
+    cursor: pointer;
+  }
 
   .stuff {
     display: grid;
@@ -1073,6 +1076,7 @@
   }
 
   const ctx = document.getElementById('reports-graph');
+  ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
   
   //Python function translator
   function Actd(data) {
@@ -1092,14 +1096,14 @@
             label: 'Cases',
             data: data.ycases,
             fill:false,
-            borderColor: 'rgba(74, 185, 178, 255)',
+            borderColor: 'rgba(231, 67, 102, 255)',
             borderWidth: 1,
             tension: 0.1
           },{
             label: 'Recovered',
             data: data.yrecovered,
             fill:false,
-            borderColor: 'rgba(231, 67, 102, 255)',
+            borderColor: 'rgba(74, 185, 178, 255)',
             borderWidth: 1,
             tension: 0.1
           },{
