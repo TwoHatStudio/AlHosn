@@ -10,6 +10,7 @@ import qrcode
 
 print("Loading...")
 '''
+CREATE DATABASE COVID;
 
 CREATE TABLE Reports (
 em_id varchar(20) DEFAULT NULL,
@@ -84,9 +85,11 @@ class Api:
         except Exception as e:
             e = str(e)
             print(e)
+
 #Reload when database is updated
     def Rel(self):
         try:
+            
             xaxis = []
             ycases = []
             ydeaths = []
@@ -117,7 +120,7 @@ class Api:
                 db.execute("select count(*) from Reports where status='d' and statusdate = '{}'".format(
                     str(cur.year) + "/" + cur.strftime("%m") + "/" + j))
                 ydeaths.append(list(db.fetchone())[0])
-                xaxis.append(i)
+                xaxis.append(str(i)+" "+calendar.month_abbr[cur.month])
 
             data = {
                 'type': 'dashboard', 'cur': 'rel', 'xaxis': xaxis, 'ycases': ycases, 'yrecovered': yrecovered,
@@ -258,7 +261,7 @@ class Api:
                 gender=user_table[3]
 
             #setting up html for the below section
-            html_below="<h6 style='color:rgba(0,0,0,0.5);'>No PCR results taken yet!</h6>"
+            html_below="<h6 style='color:rgba(0,0,0,0.5);margin-top:30px;margin-bottom:20px;'>No PCR results taken yet!</h6>"
             #latest pcr result
             if reports_data[1] is not None and colortype !="null":
             
@@ -335,12 +338,15 @@ class Api:
             
             actions='''  <button class="btnz" id="usebtn" onclick="showupuser()" type="button">UPDATE USER DETAILS</button>
         <button class="btnz" id="delbtn" onclick="showdel()" type="button">DELETE USER</button>      <div id="userupdate">
-      
+        <label>Emirates ID:</label><br>
         <input id="updid" class="searcher" type="text" value="{}" placeholder="Enter Emirates ID"><br><br>
+        <label>Full Name:</label><br>
 
         <input id="updname" class="searcher" type="text" value="{}"  placeholder="Enter Name"><br><br>
+        <label>Age:</label><br>
 
-        <input id="updage" class="searcher" type="number" value="{}"  placeholder="Enter Age"><br><br>
+        <input id="updage" class="searcher" type="number" min="0" value="{}"  placeholder="Enter Age"><br><br>
+        <label>Gender(M/F):</label><br>
 
         <input id="updgender" class="searcher" type="text" value="{}"  placeholder="Gender"><br><br>
         <button class="btnz" onclick="UpdateUser(this.id)" id='{}' type="button">UPDATE USER DETAILS</button><br>
@@ -353,7 +359,7 @@ class Api:
         <button class="btnz" id ="{}" onclick="DeleteUser(this.id)" type="button">Yes</button>
         
         <button class="btnz" onclick="hidedel()" type="button">CANCEL</button>
-      </div>'''.format(emid,name,user_table[2],gender,emid,emid)
+      </div>'''.format(emid,name,user_table[2],user_table[3],emid,emid)
             if status!= "Deceased":
                 actions='''<div id="actions">
                 <center>
@@ -607,6 +613,7 @@ class Api:
 
             elif status =="notvac":
                 status="0"
+
             db.execute("update Reports set Vaccinated='{}', Vaccination='{}' where em_id='{}'".format(status, date, emid))
             sqls.commit()
 
@@ -640,11 +647,60 @@ class Api:
         try: 
             print("Updating...")
             db.execute("select name from Users where emirates_id = '{}'".format(emid))
-            if len(list(db.fetchall())) ==0:
+            print(len(list(db.fetchall())))
+            if len(list(db.fetchall())) ==0 or (len(list(db.fetchall())) ==1 and emid==e):
 
                 db.execute("update Users set emirates_id='{}',name='{}', age='{}', gender='{}' where emirates_id='{}'".format(emid,name, age, gender.upper(), e))
                 db.execute("update Reports set em_id='{}' where em_id='{}'".format(emid,e))
                 sqls.commit()
+                db.execute("select * from Users where emirates_id = '{}'".format(emid))
+                user_table =db.fetchone()
+                name = user_table[1]
+                #report table
+                db.execute("select * from Reports where em_id = '{}'".format(emid))
+                reports_obj=db.fetchone()
+                reports_data=list(reports_obj)
+
+                #making it understandable by the reader
+                status = ''
+                if reports_data[1] == '-':
+                    status = 'Negative'
+                elif reports_data[1] == '+':
+                    status = 'Positive'
+                elif reports_data[1] == 'd':
+                    status = 'Deceased'
+                else:
+                    status = 'Out Dated'
+
+                qr = qrcode.QRCode(
+                    version=1,
+                    error_correction=qrcode.constants.ERROR_CORRECT_L,
+                    box_size=10,
+                    border=4,
+                )
+                qr.add_data(
+                    "Name:{}\nEmirates_ID:{}\nAge:{}\nResult:{}\nResult Date:{}".format(name, emid, user_table[2], status, reports_data[2]))
+                qr.make(fit=True)
+                if reports_data[1] == '-':
+                    img = qr.make_image(fill_color=(74, 185, 178), back_color="white")
+                elif reports_data[1] == '+':
+                    img = qr.make_image(fill_color=(231, 67, 102), back_color="white")
+
+                else:
+                    img = qr.make_image(fill_color=(101, 110, 128), back_color="white")
+
+                img.save("temp.png")
+
+                with open("temp.png", "rb") as img_file:
+                    b64_string = base64.b64encode(img_file.read())
+                    db.execute(
+                        'update Reports set qr_code = "{}" where em_id="{}"'.format(b64_string.decode('utf-8'), emid))
+                    sqls.commit()
+
+                qrs = b64_string.decode('utf-8')
+                os.remove("temp.png")
+                
+
 
                 print("Updated")
                 return {'type': 'reload', 'cur': None, 'emi': emid}
@@ -679,5 +735,5 @@ if __name__ == '__main__':
     ht = ''
     with open('index.html', 'r') as f:
         ht = str(f.read())
-    window = webview.create_window('Computer Project', html=ht, js_api=api)
-    webview.start(debug=True,gui="edgehtml")
+    window = webview.create_window('VALUE HEALTH', html=ht, js_api=api)
+    webview.start(debug=True)
