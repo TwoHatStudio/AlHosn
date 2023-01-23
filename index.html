@@ -4,7 +4,6 @@
 <head>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Carme&display=swap" rel="stylesheet">
   <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
   <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
@@ -16,7 +15,7 @@
 
   <!--loading screen-->
   <div id="connect" class="Connection">
-    <h1 class="server-pass" id="server-pass">VALUE HAELTH</h1>
+    <h1 class="server-pass" id="server-pass">VALUE HEALTH</h1>
     <h1 class="server-connect" id="server-connect">
       Connecting...
     </h1>
@@ -28,7 +27,7 @@
 
       <div style="padding-top:5px;padding-left:5px;">Inspired By <br> Al hosn</div>
       <br>
-      <p>Beta 0.1</p>
+      <p>1.0 V</p>
     </div>
 
   </div>
@@ -74,10 +73,10 @@
       </ul><br><br>
       <p onclick="Displayreports(this.title)" title="COVID Reports"
         style="padding-right:50px;color:#4287f5;cursor: pointer;text-align:right;">View Reports</p><br><br><br>
-      
-  <canvas id="reports-graph"></canvas>
 
-
+      <div style="height: 500px;width: 1000px;">
+        <canvas id="reports-graph"></canvas>
+        </div>
 
     </div>
   </center>
@@ -87,10 +86,9 @@
     <i onclick="opendashboard()" class="fi-rr-angle-small-left"></i>
     <h2>COVID Reports</h2>
     <div class="container">
-      <div onclick="AddUser()" title="Add User"
-        style="padding-right:50px;color:#4287f5;cursor: pointer;text-align:right;">
+      <div style="padding:20px ; padding-right:50px;color:#4287f5;cursor: pointer;text-align:right;">
         <div>
-          <label title="Recovered">Add User</label>
+          <p onclick="AddUser()" title="Add User">Add User</p>
         </div>
       </div>
       <ul class="responsive-table" id="reports-table">
@@ -113,7 +111,7 @@
           <div class="col col-3">
             <button onclick="togfilterage()" class="filter">Age &nbsp;<i class="fi-rr-angle-small-down"></i></button>
             <div id="filterage" class="filter-content">
-              <input class="searcher" oninput="filter('')" type="number" maxlength="3" placeholder="Search by age"
+              <input class="searcher" oninput="filter('')" min="0" type="number" maxlength="3" placeholder="Search by age"
                 id="age">
             </div>
           </div>
@@ -158,12 +156,16 @@
 
     <div id="Add-Content" class="Details-content">
       <div class="froms">
+        <label>Emirates ID:</label>
         <input id="addid" type="text" placeholder="Enter Emirates ID"><br><br>
 
+        <label>Full Name:</label>
         <input id="addname" type="text" placeholder="Enter Name"><br><br>
 
-        <input id="addage" type="number" placeholder="Enter Age"><br><br>
+        <label>Age:</label>
+        <input id="addage" type="number" min="0" placeholder="Enter Age"><br><br>
 
+        <label>Gender(M/F):</label>
         <input id="addgender" type="text" placeholder="Gender"><br><br>
         <button class="btnz" onclick="AddNewUser()" type="button">Add User</button><br>
         <p id="erroramessage"></p><br>
@@ -188,13 +190,13 @@
     border-radius: 10px;
     box-shadow: 0px 0px 50px rgba(0, 0, 0, 0.2);
 
-
   }
 
   .rep {
 
     animation-name: intro2;
     animation-duration: .5s;
+    margin: 0px;
 
   }
 
@@ -222,6 +224,10 @@
     text-decoration: none;
     display: block;
 
+  }
+
+  .filter-content a:hover{
+    background-color: #b0b0b0;
   }
 
   .dates {
@@ -321,10 +327,8 @@
     border: none;
     cursor: pointer;
   }
-  #reports-graph{
-    width: 80%;
-    height: 80%;
-  }
+
+
   .searcher {
     box-sizing: border-box;
     background-position: 14px 12px;
@@ -370,7 +374,9 @@
   }
 
   .dash li {
-
+    flex-basis: 20%;
+    width: 100%;
+    height: 100%;
     border-radius: 5px;
     background-color: #f6f6f6;
     padding: 20px;
@@ -381,11 +387,14 @@
   }
 
   .dash {
-    display: grid;
+    display: flex;
     list-style-type: none;
-    grid-template-columns: auto auto auto auto;
+    flex-direction: row;
     column-gap: 50px;
     padding-left: 5px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
 
   }
 
@@ -431,7 +440,8 @@
 
     color: #fff;
   }
-  i{
+
+  i {
     cursor: pointer;
   }
 
@@ -536,15 +546,21 @@
 
   body {
     font-family: 'Carme', sans-serif;
+    width: 100%;
+    height: 100%;
   }
 
   ::-webkit-scrollbar {
-    width: 10px;
+    width: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #aeaeae;
+
   }
 
   ::-webkit-scrollbar-track {
-    border-radius: 10px;
-    background: #242424;
+    background: #e1e1e1;
   }
 
   *,
@@ -582,14 +598,24 @@
     text-align: center;
     padding: 10px;
     width: 350px;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
   }
 
-
+  * {
+    padding: 0px;
+    margin: 0px;
+  }
 
   .Details-header {
     padding: 2px 16px;
     border-radius: 5px;
     color: white;
+  }
+
+  .Details-header h1,
+  p {
+    margin: 10px;
   }
 
   .Details-body {
@@ -609,13 +635,10 @@
   }
 
   .container {
-    width: auto;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 50px;
+    width: 100%;
     overflow: auto;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 10px;
+    padding-top: 40px;
   }
 
   .null {
@@ -824,10 +847,10 @@
     var aup = document.getElementById("updage").value;
     var gup = document.getElementById("updgender").value;
     if (eup != "" && naup != "" && aup != "" && gup != "") {
-      pywebview.api.UpdateUserData(emup,eup, naup, aup, gup).then(Actd);
+      pywebview.api.UpdateUserData(emup, eup, naup, aup, gup).then(Actd);
     }
     else {
-      document.getElementById("errormessage").innerHTML = "Please Fill All Details";
+      document.getElementById("errorumessage").innerHTML = "Please Fill All Details";
     }
 
   }
@@ -1075,20 +1098,21 @@
     }
   }
 
+  var chart=null
+
   const ctx = document.getElementById('reports-graph');
-  ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
-  
+
   //Python function translator
   function Actd(data) {
-  console.log(data.type)
+    console.log(data.type)
     if (data.type == 'dashboard') {
       //if the data is for the dashbord
       document.getElementById('vac').innerHTML = data.vaccinated;
       document.getElementById('case').innerHTML = data.cases;
       document.getElementById('rec').innerHTML = data.recovered;
       document.getElementById('ded').innerHTML = data.deaths;
-
-      new Chart(ctx, {
+      if(data.cur !="rel"){
+      chart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: data.xaxis,
@@ -1131,6 +1155,57 @@
         }
         }
       });
+      
+    }else{
+
+      chart.destroy()
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.xaxis,
+          datasets: [{
+            label: 'Cases',
+            data: data.ycases,
+            fill:false,
+            borderColor: 'rgba(231, 67, 102, 255)',
+            borderWidth: 1,
+            tension: 0.1
+          },{
+            label: 'Recovered',
+            data: data.yrecovered,
+            fill:false,
+            borderColor: 'rgba(74, 185, 178, 255)',
+            borderWidth: 1,
+            tension: 0.1
+          },{
+            label: 'Deaths',
+            data: data.ydeaths,
+            fill:false,
+            borderColor: 'rgba(235, 140, 52,255)',
+            borderWidth: 1,
+            tension: 0.1
+          }]
+
+        },
+        
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          },
+          layout: {
+            padding: {
+              left:100,
+              right:100
+            }
+        }
+        }
+      });
+        
+    }
+      
 
       if (data.cur == 'connect') {
         document.getElementById('Dashboard').style.display = "block";
@@ -1151,7 +1226,6 @@
     }
 
     else if (data.type == 'reports') {
-      //if the data is for reports table
       //if the data is for reports table
       var container = document.getElementById('reports-table-content')
 
@@ -1187,12 +1261,12 @@
       setTimeout(function () { pywebview.api.Rel().then(Actd) }, 3000)
 
     }
-    else if(data.type==="eu"){
+    else if (data.type === "eu") {
 
       document.getElementById("errorumessage").innerHTML = data.error;
 
     }
-    else if(data.type==="ea"){
+    else if (data.type === "ea") {
 
       document.getElementById("erroramessage").innerHTML = data.error;
 
